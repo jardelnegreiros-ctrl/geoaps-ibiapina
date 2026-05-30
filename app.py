@@ -8,6 +8,7 @@ import pydeck as pdk
 from banco import carregar_localidades, salvar_localidades, CAMINHO_BANCO
 from dados_exemplo import criar_dados_exemplo
 from importador import importar_planilha, COLUNAS_OBRIGATORIAS
+from calculos import aplicar_calculos
 
 
 PASTA_PROJETO = Path(__file__).resolve().parent
@@ -98,6 +99,92 @@ if importar:
             st.error(str(erro))
         except Exception as erro:
             st.error(f"Erro inesperado ao importar a planilha: {erro}")
+            st.divider()
+
+st.subheader("Cadastrar nova localidade")
+
+with st.form("form_cadastro_localidade"):
+    col_a, col_b = st.columns(2)
+
+    with col_a:
+        nova_localidade = st.text_input("Nome da localidade")
+        novo_tipo_area = st.selectbox(
+            "Tipo de área",
+            ["Urbana", "Rural", "Serra"]
+        )
+        nova_populacao = st.number_input(
+            "População estimada",
+            min_value=0,
+            step=1
+        )
+        nova_distancia = st.number_input(
+            "Distância até UBS mais próxima (km)",
+            min_value=0.0,
+            step=0.1
+        )
+        novo_saneamento = st.selectbox(
+            "Saneamento adequado?",
+            ["Sim", "Parcial", "Não"]
+        )
+
+    with col_b:
+        novo_risco_alagamento = st.selectbox(
+            "Risco de alagamento",
+            ["Baixo", "Médio", "Alto"]
+        )
+        novo_risco_queimadas = st.selectbox(
+            "Risco de queimadas",
+            ["Baixo", "Médio", "Alto"]
+        )
+        novos_casos_dengue = st.number_input(
+            "Casos de dengue",
+            min_value=0,
+            step=1
+        )
+        novas_familias_vulneraveis = st.number_input(
+            "Famílias vulneráveis",
+            min_value=0,
+            step=1
+        )
+        nova_latitude = st.number_input(
+            "Latitude",
+            value=-3.9234,
+            format="%.6f"
+        )
+        nova_longitude = st.number_input(
+            "Longitude",
+            value=-40.8898,
+            format="%.6f"
+        )
+
+    cadastrar = st.form_submit_button("Salvar localidade")
+
+
+if cadastrar:
+    if not nova_localidade.strip():
+        st.warning("Informe o nome da localidade.")
+    else:
+        nova_linha = pd.DataFrame([
+            {
+                "localidade": nova_localidade.strip(),
+                "tipo_area": novo_tipo_area,
+                "populacao": int(nova_populacao),
+                "distancia_ubs_km": float(nova_distancia),
+                "saneamento_adequado": novo_saneamento,
+                "risco_alagamento": novo_risco_alagamento,
+                "risco_queimadas": novo_risco_queimadas,
+                "casos_dengue": int(novos_casos_dengue),
+                "familias_vulneraveis": int(novas_familias_vulneraveis),
+                "latitude": float(nova_latitude),
+                "longitude": float(nova_longitude)
+            }
+        ])
+
+        nova_linha = aplicar_calculos(nova_linha)
+        salvar_localidades(nova_linha)
+
+        st.success(f"Localidade '{nova_localidade}' cadastrada com sucesso!")
+        st.rerun()
 
 
 df = carregar_localidades()

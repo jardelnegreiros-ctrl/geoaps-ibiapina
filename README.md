@@ -42,6 +42,13 @@ O painel permite visualizar localidades, população, distância até UBS, sanea
 - Exportação para Excel
 - Exportação para CSV
 - Execução local no Windows com arquivo .bat
+- Importação de planilhas CSV e Excel
+- Validação automática de colunas obrigatórias
+- Cálculo automático do índice após importação
+- Download de modelo de planilha para preenchimento
+- Cadastro manual de localidades pela interface
+- Cálculo automático da vulnerabilidade no cadastro manual
+- Atualização automática do dashboard após novo cadastro
 
 ## Índice de vulnerabilidade territorial
 

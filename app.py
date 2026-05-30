@@ -7,6 +7,7 @@ import pydeck as pdk
 
 from banco import carregar_localidades, salvar_localidades, CAMINHO_BANCO
 from dados_exemplo import criar_dados_exemplo
+from importador import importar_planilha, COLUNAS_OBRIGATORIAS
 
 
 PASTA_PROJETO = Path(__file__).resolve().parent
@@ -40,6 +41,37 @@ with st.sidebar:
 
     st.divider()
 
+    st.subheader("Importar planilha")
+
+    arquivo_importado = st.file_uploader(
+        "Envie um arquivo CSV ou Excel",
+        type=["csv", "xlsx", "xls"]
+    )
+
+    importar = st.button(
+        "Importar planilha",
+        use_container_width=True
+    )
+
+    with st.expander("Ver colunas obrigatórias"):
+        st.write(COLUNAS_OBRIGATORIAS)
+
+    modelo_path = PASTA_EXPORTS / "modelo_importacao_geoaps.xlsx"
+
+    if modelo_path.exists():
+        with open(modelo_path, "rb") as modelo:
+            st.download_button(
+                label="Baixar modelo Excel",
+                data=modelo,
+                file_name="modelo_importacao_geoaps.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                use_container_width=True
+            )
+    else:
+        st.info("Rode python modelo_planilha.py para gerar o modelo Excel.")
+
+    st.divider()
+
     st.subheader("Sobre o projeto")
     st.write("Município: Ibiapina - Ceará")
     st.write("Tema: Territorialização em Saúde")
@@ -50,6 +82,22 @@ if carregar_exemplo:
     df_exemplo = criar_dados_exemplo()
     salvar_localidades(df_exemplo)
     st.success("Dados de exemplo carregados com sucesso!")
+
+
+if importar:
+    if arquivo_importado is None:
+        st.warning("Envie uma planilha antes de clicar em importar.")
+    else:
+        try:
+            df_importado = importar_planilha(arquivo_importado)
+            st.success(
+                f"Planilha importada com sucesso! "
+                f"{len(df_importado)} localidades foram processadas."
+            )
+        except ValueError as erro:
+            st.error(str(erro))
+        except Exception as erro:
+            st.error(f"Erro inesperado ao importar a planilha: {erro}")
 
 
 df = carregar_localidades()
